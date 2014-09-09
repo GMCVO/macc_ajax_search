@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<menu>
+  <item>
+    <path>civicrm/ajaxsearch/search</path>
+    <title>Search</title>
+    <page_callback>AJAXSearch_Form_Search</page_callback>
+    <access_callback>1</access_callback>
+    <is_public>true</is_public>
+    <weight>0</weight>
+  </item>
+  <item>
+    <path>civicrm/ajaxsearch/home</path>
+    <title>Home</title>
+    <page_callback>AJAXSearch_Form_Search</page_callback>
+    <access_callback>1</access_callback>
+    <is_public>true</is_public>
+    <weight>0</weight>
+  </item>
+  <item>
+    <path>civicrm/ajaxsearch/rest</path>
+    <page_callback>AJAXSearch_Utils_REST::ajax</page_callback>
+    <access_callback>1</access_callback>
+  </item>
+</menu>

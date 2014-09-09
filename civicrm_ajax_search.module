@@ -1,0 +1,332 @@
+<?php
+
+/*
+ * Implements hook_civicrm_config
+ */
+function civicrm_ajax_search_civicrm_config( &$config ) {
+  $template = CRM_Core_Smarty::singleton( );
+
+  $moduleRoot = dirname( __FILE__ );
+
+  $templateDir = $moduleRoot . DIRECTORY_SEPARATOR . 'templates';
+
+  if ( is_array( $template->template_dir ) ) {
+    array_unshift( $template->template_dir, $templateDir );
+  }
+  else {
+    $template->template_dir = array($templateDir, $template->template_dir);
+  }
+
+  // also fix php include path
+  $include_path = $moduleRoot . PATH_SEPARATOR . get_include_path( );
+  set_include_path( $include_path );
+}
+
+/*
+ * Implements hook_civicrm_xmlMenu().
+ */
+function civicrm_ajax_search_civicrm_xmlMenu( &$files ) {
+  $files[] =
+      dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'AJAXSearch' . DIRECTORY_SEPARATOR . 'xml' . DIRECTORY_SEPARATOR . 'Menu' . DIRECTORY_SEPARATOR . 'ajaxsearch.xml';
+}
+
+/**
+ * Implements hook_civicrm_alterAPIPermissions()
+ * - hook allows you to change the permissions checked when doing API 3 calls.
+ */
+function civicrm_ajax_search_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions) {
+  // Skip permission checks for contact ajax[pre]search calls
+  $permissions['contact']['ajaxpresearch'] = array();
+  $permissions['contact']['ajaxsearch'] = array();
+
+  if ($entity == 'contact' and ($action == 'ajaxpresearch' || $action == 'ajaxsearch')) {
+      $params['check_permissions'] = false;
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function civicrm_ajax_search_menu() {
+  $items = array();
+  $items['admin/config/civicrm_ajax_search'] = array(
+    'title' => 'CiviCRM AJAX Search',
+    'description' => 'Configure settings for CiviCRM AJAX Search.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('civicrm_ajax_search_settings_form'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer CiviCRM'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+/*
+ * Form builder function for module settings form.
+ *
+ * @ingroup forms
+ * @see civicrm_ajax_search_settings_form_validate
+ * @see civicrm_ajax_search_settings_form_submit
+ */
+function civicrm_ajax_search_settings_form($form, &$form_state) {
+  if (!civicrm_initialize()) {
+    return;
+  }
+
+  $form = array();
+
+  $fieldsMulti = array();
+  $query = "
+SELECT f.id, f.label, g.title
+FROM civicrm_custom_field f
+INNER JOIN civicrm_custom_group g ON f.custom_group_id = g.id
+WHERE f.html_type IN ('CheckBox','Multi-Select')
+  AND f.is_active = 1
+  AND g.is_active = 1
+ORDER BY f.label";
+  $dao = CRM_Core_DAO::executeQuery($query);
+  while ( $dao->fetch() ) {
+    $fieldsMulti[$dao->id] = $dao->label . ' (' . $dao->title . ')';
+  }
+
+  $fieldsBoolean = array();
+  $query = "
+SELECT f.id, f.label, g.title
+FROM civicrm_custom_field f
+INNER JOIN civicrm_custom_group g ON f.custom_group_id = g.id
+WHERE f.data_type = 'Boolean'
+  AND f.is_active = 1
+  AND g.is_active = 1
+ORDER BY f.label";
+  $dao = CRM_Core_DAO::executeQuery($query);
+  while ( $dao->fetch() ) {
+    $fieldsBoolean[$dao->id] = $dao->label . ' (' . $dao->title . ')';
+  }
+
+  $fieldsTextarea = array();
+  $query = "
+SELECT f.id, f.label, g.title
+FROM civicrm_custom_field f
+INNER JOIN civicrm_custom_group g ON f.custom_group_id = g.id
+WHERE f.data_type = 'Memo'
+  AND f.is_active = 1
+  AND g.is_active = 1
+ORDER BY f.label";
+  $dao = CRM_Core_DAO::executeQuery($query);
+  while ( $dao->fetch() ) {
+    $fieldsTextarea[$dao->id] = $dao->label . ' (' . $dao->title . ')';
+  }
+
+  $locationTypes = array();
+  $query = "
+SELECT id, name
+FROM civicrm_location_type
+WHERE is_active = 1
+ORDER BY id";
+  $dao = CRM_Core_DAO::executeQuery($query);
+  while ( $dao->fetch() ) {
+    $locationTypes[$dao->id] = $dao->name;
+  }
+
+  $form['multi'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Who / What / Where Fields'),
+    '#description' => t('Choose the CiviCRM Multi-Select custom fields to be used on the search form.'),
+    '#tree' => TRUE,
+    '#parents' => array('multi'),
+  );
+  $form['multi']['select_multi1'] = array(
+    '#type' => 'select',
+    '#title' => t('"Who" field'),
+    '#options' => array(0 => t('-- Select --')) + $fieldsMulti,
+    '#required' => TRUE,
+    '#default_value' => variable_get('civicrm_ajax_search_select_multi1', 0),
+  );
+  $form['multi']['select_multi2'] = array(
+    '#type' => 'select',
+    '#title' => t('"What" field'),
+    '#options' => array(0 => t('-- Select --')) + $fieldsMulti,
+    '#required' => TRUE,
+    '#default_value' => variable_get('civicrm_ajax_search_select_multi2', 0),
+  );
+  $form['multi']['select_multi3'] = array(
+    '#type' => 'select',
+    '#title' => t('"Where" field'),
+    '#options' => array(0 => t('-- Select --')) + $fieldsMulti,
+    '#required' => TRUE,
+    '#default_value' => variable_get('civicrm_ajax_search_select_multi3', 0),
+  );
+
+  $form['privacy'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Privacy Fields'),
+    '#description' => t('Choose the CiviCRM custom fields used to control which organisations are publicly searchable.'),
+    '#tree' => TRUE,
+    '#parents' => array('privacy'),
+  );
+  $form['privacy']['select_public'] = array(
+    '#type' => 'select',
+    '#title' => t('Field specifying whether an organisation is public'),
+    '#options' => array(0 => t('-- Select --')) + $fieldsBoolean,
+    '#required' => TRUE,
+    '#default_value' => variable_get('civicrm_ajax_search_select_public', 0),
+  );
+  $form['privacy']['select_approved'] = array(
+    '#type' => 'select',
+    '#title' => t('Field specifying whether an organisation is approved for listing (optional)'),
+    '#options' => array(0 => t('-- Select --')) + $fieldsBoolean,
+    '#required' => FALSE,
+    '#default_value' => variable_get('civicrm_ajax_search_select_approved', 0),
+  );
+  $form['privacy']['select_hide_address'] = array(
+    '#type' => 'select',
+    '#title' => t('Field specifying whether an organisation\'s address should be hidden'),
+    '#options' => array(0 => t('-- Select --')) + $fieldsBoolean,
+    '#required' => TRUE,
+    '#default_value' => variable_get('civicrm_ajax_search_select_hide_address', 0),
+  );
+
+  $form['privacy']['select_hide_phone'] = array(
+    '#type' => 'select',
+    '#title' => t('Field specifying whether an organisation\'s phone number should be hidden'),
+    '#options' => array(0 => t('-- Select --')) + $fieldsBoolean,
+    '#required' => TRUE,
+    '#default_value' => variable_get('civicrm_ajax_search_select_hide_phone', 0),
+  );
+
+  $form['banner_text'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Banner text'),
+    '#description' => t('Optional banner text to display under search form.'),
+    '#default_value' => variable_get('civicrm_ajax_search_banner_text', ''),
+  );
+
+  $form['postcode'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Postcode Search'),
+    '#description' => t('Configure the optional separate Postcode Search.'),
+    '#tree' => TRUE,
+    '#parents' => array('postcode'),
+  );
+  $form['postcode']['enable_search'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable the optional separate Postcode Search?'),
+    '#required' => FALSE,
+    '#default_value' => variable_get('civicrm_ajax_search_postcode_search', 0),
+  );
+  $form['postcode']['location_type'] = array(
+    '#type' => 'select',
+    '#title' => t('Location Type'),
+    '#description' => t('Location type in which to search for postcode'),
+    '#options' => array(0 => t('-- Select --')) + $locationTypes,
+    '#required' => FALSE,
+    '#default_value' => variable_get('civicrm_ajax_search_postcode_location_type', 0),
+  );
+  $form['postcode']['help_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Help Text'),
+    '#description' => t('Help Text to appear above postcode field'),
+    '#required' => FALSE,
+    '#default_value' => variable_get('civicrm_ajax_search_postcode_help_text', ''),
+  );
+
+  $form['keyword'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Keyword Search'),
+    '#description' => t('Configure the optional separate Keyword Search.'),
+    '#tree' => TRUE,
+    '#parents' => array('keyword'),
+  );
+  $form['keyword']['enable_search'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable the optional separate Keyword Search?'),
+    '#required' => FALSE,
+    '#default_value' => variable_get('civicrm_ajax_search_keyword_search', 0),
+  );
+  $form['keyword']['keyword_field'] = array(
+    '#type' => 'select',
+    '#title' => t('Keyword Field'),
+    '#title' => t('Field to be searched for keywords'),
+    '#options' => array(0 => t('-- Select --')) + $fieldsTextarea,
+    '#required' => FALSE,
+    '#default_value' => variable_get('civicrm_ajax_search_keyword_field', 0),
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save Settings'),
+  );
+
+  return $form;
+}
+
+/*
+ * Validate handler for civicrm_ajax_search_settings_form
+ *
+ * @ingroup forms
+ * @see civicrm_ajax_search_settings_form
+ */
+function civicrm_ajax_search_settings_form_validate($form, &$form_state) {
+  $values = $form_state['values'];
+
+  if (empty($values['multi']['select_multi1']) ||
+      empty($values['multi']['select_multi2']) ||
+      empty($values['multi']['select_multi3'])) {
+    form_set_error('multi', 'Please complete all three Who / What / Where fields.');
+  }
+
+  if ($values['multi']['select_multi1'] == $values['multi']['select_multi2'] ||
+      $values['multi']['select_multi2'] == $values['multi']['select_multi3'] ||
+      $values['multi']['select_multi1'] == $values['multi']['select_multi3']) {
+    form_set_error('multi', 'Please select three different fields.');
+  }
+
+  if (empty($values['privacy']['select_public']) ||
+      empty($values['privacy']['select_hide_address']) ||
+      empty($values['privacy']['select_hide_phone'])) {
+    form_set_error('privacy', 'Please complete all privacy fields (the same field may be used for address privacy and phone privacy).');
+  }
+
+  if ($values['privacy']['select_public'] == $values['privacy']['select_hide_address'] ||
+      $values['privacy']['select_public'] == $values['privacy']['select_hide_phone'] ||
+      $values['privacy']['select_public'] == $values['privacy']['select_approved'] ||
+      $values['privacy']['select_approved'] == $values['privacy']['select_hide_address'] ||
+      $values['privacy']['select_approved'] == $values['privacy']['select_hide_phone']) {
+    form_set_error('privacy', 'The address/phone/approved privacy fields cannot be the same as the "public" field.');
+  }
+
+  if ($values['postcode']['enable_search'] && !$values['postcode']['location_type']) {
+    form_set_error('postcode', 'Please select Location Type.');
+  }
+
+  if ($values['keyword']['enable_search'] && !$values['keyword']['keyword_field']) {
+    form_set_error('keyword', 'Please select Keyword Field.');
+  }
+}
+
+/*
+ * Submit handler for civicrm_ajax_search_settings_form
+ *
+ * @ingroup forms
+ * @see civicrm_ajax_search_settings_form
+ */
+function civicrm_ajax_search_settings_form_submit($form, &$form_state) {
+  if (!civicrm_initialize()) {
+    return;
+  }
+  $values = $form_state['values'];
+  foreach ($values['multi'] as $key => $value) {
+    variable_set('civicrm_ajax_search_' . $key, intval($value));
+  }
+  foreach ($values['privacy'] as $key => $value) {
+    variable_set('civicrm_ajax_search_' . $key, intval($value));
+  }
+  variable_set('civicrm_ajax_search_banner_text', $values['banner_text']);
+  variable_set('civicrm_ajax_search_postcode_search', $values['postcode']['enable_search']);
+  variable_set('civicrm_ajax_search_postcode_location_type', $values['postcode']['location_type']);
+  variable_set('civicrm_ajax_search_postcode_help_text', $values['postcode']['help_text']);
+  variable_set('civicrm_ajax_search_keyword_search', $values['keyword']['enable_search']);
+  variable_set('civicrm_ajax_search_keyword_field', $values['keyword']['keyword_field']);
+  #drupal_set_message("civicrm_ajax_search_settings_form_submit: values: " . print_r($values, TRUE));
+  drupal_set_message(t('The configuration options have been saved.'));
+}

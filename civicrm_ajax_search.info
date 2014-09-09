@@ -1,0 +1,6 @@
+name = CiviCRM AJAX Search
+description = Alternative to CiviCRM profile search, using AJAX to disable options that would return no results.
+version = 4.3
+package = CiviCRM
+core = 7.x
+php = 5.2
