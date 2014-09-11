@@ -58,6 +58,9 @@ $addressFrom
 $where
 $orderBy
 LIMIT $limitFrom, $limitNum";
+
+CRM_Core_Error::debug_log_message( "searchquery: ".print_r($searchQuery, TRUE) );
+
     $dao = CRM_Core_DAO::executeQuery( $searchQuery );
     $results = array();
     while ( $dao->fetch() ) {

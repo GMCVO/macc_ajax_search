@@ -63,6 +63,14 @@
         <input type="button" name="Search" id="keywordSearchButton" value="Search">
       </div>
     {/if}
+	
+	<div id="ccgSearchForm">
+		 <label>Search for a CCG funded project</label><br />		
+         {$form.ccgOptions.html}  
+		 <input type="button" name="Search" id="ccgSearchButton" value="Search">
+	</div>	   
+
+	
     <div id="searchResults" class="form-item">
       <div id="resultsControlsTop" style="display:none;">
         <span class="print-view"><a href="javascript:window.print()"><img src="/images/print_icon.gif" alt="Click here to print this page" /></a></span>
@@ -161,7 +169,10 @@ $('#pagePrev, #pagePrevTop').click( function() {
             else if (searchMode == 'keyword') {
               $('#keyword').displayKeywordSearchResults(false);
             }
-            else {
+			 else if (searchMode == 'ccg') {
+              $('#ccgOptions').displayCCGSearchResults(false);
+            }
+			else {
               $(this).multiSelectGetResults();
             }
           }
@@ -178,6 +189,9 @@ $('#pageNext, #pageNextTop').click( function() {
           }
           else if (searchMode == 'keyword') {
             $('#keyword').displayKeywordSearchResults(false);
+          }
+		  else if (searchMode == 'ccg') {
+            $('#ccgOptions').displayCCGSearchResults(false);
           }
           else {
             $(this).multiSelectGetResults();
@@ -224,6 +238,14 @@ $('#keyword').bind('keypress', function(e) {
           }
         });
 
+$('#ccgSearchButton').click( function() {
+    $(this).addClass('clicked');
+    searchMode = 'ccg';
+    pageNum = 0;
+    $('#ccgOptions').displayCCGSearchResults(true);
+});		
+		
+		
 $('#keywordSearchButton').click( function() {
           if ($('#keyword').val() == '') {
             alert('Please enter a keyword.');

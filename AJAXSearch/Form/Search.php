@@ -87,6 +87,8 @@ class AJAXSearch_Form_Search extends CRM_Core_Form {
             // and CRM_Activity_BAO_Query::buildSearchForm activityOptions.
             $customOption = CRM_Core_BAO_CustomOption::valuesByID( $field_id );
             foreach ($customOption as $value => $label) {
+								
+			
                 $val = "option{$i}_id[$value]";
                 $this->addElement( 'checkbox', $val, null, $label );
             }
@@ -98,6 +100,21 @@ class AJAXSearch_Form_Search extends CRM_Core_Form {
                 }
             }
         }
+		
+		//Add the ccg areas dropdown options here
+		// field id of custom field to use (from civicrm_custom_field)
+		$field_id = 78;
+		$customOptionCCG = CRM_Core_BAO_CustomOption::valuesByID( $field_id );
+			
+		
+		$ccgOptions = &$this->add('select', 'ccgOptions','',
+			array('' => ts('- select -')) + $customOptionCCG
+		);
+		$ccgOptions->setMultiple(1);
+				
+		//CRM_Core_Error::debug_log_message( "customoptionCCG: ".print_r($customOptionCCG, TRUE) );
+		
+		
 
         if ($postcode_search) {
           $this->add( 'text',
@@ -393,6 +410,18 @@ WHERE f.id = %1';
                 'configured' => FALSE,
             );
         }
+		
+		// OR search on ccg area
+		CRM_Core_Error::debug_log_message( "params: ".print_r($params, TRUE) );
+		if ($params['ccg_search']) {
+			$ccgOptions = explode('#', $params['ccg_search']);
+			 foreach ($ccgOptions as $option) {
+					$whereSubClauses[] = "(where_do_they_work__78 LIKE CONCAT('%', CHAR(1), '$option', CHAR(1), '%'))";
+			 }
+			$whereClauses[] = '(' . implode(' OR ', $whereSubClauses) . ')'; 
+			 
+		}
+		
 
         // OR search on keywords.
         $keyword = isset($params['keyword']) ? CRM_Core_DAO::escapeString(trim($params['keyword'])) : '';

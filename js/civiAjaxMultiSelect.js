@@ -629,6 +629,77 @@ if(jQuery) (function($){
       );
     },
 
+	displayCCGSearchResults: function(wipe) {
+	  alert("Here1");
+      if (wipe) {
+        $(this).attr('disabled', 1);
+        $("#results").html('');
+        $('#resultsControlsTop').hide();
+        $('#resultsControls').hide();
+      }
+	  // Get selected results as some kind of seperated string
+	  var ccgSelection = $(this).val().join('#');
+	   CRM.api(
+        "contact",
+        "ajaxsearch",
+        {
+          version: 3,
+          ccg_search: ccgSelection,
+          page: pageNum
+        },
+        {
+          success:function(data, settings){
+            if (data.values.num_total > 0) {
+              resultsText = '<table id="resultsTable"><tr id="resultsHeaderRow"><th id="resultsHeaderName">Organisation Name</th><th id="resultsHeaderPostcode">Postcode</th><th id="resultsHeaderWho">Who</th><th id="resultsHeaderWhat">What</th><th id="resultsHeaderWhere">Where</th></tr>\n';
+              $.each(data.values.contacts, function(index, value) {
+                  resultsText = resultsText + '<tr class="resultRow"><td><a class="new-window" href="/contacts/view/' + value.id + '">' + value.name + '</a></td><td>' + value.postal_code + '</td><td>' + value.option1 + '</td><td>' + value.option2 + '</td><td>' + value.option3 + '</td></tr>\n';
+              });
+              resultsText = resultsText + '</table>\n';
+              $("#results").html(resultsText);
+              $("#results tr:even").addClass('even');
+              $("#results tr:odd").addClass('odd');
+              $('#results a.new-window').click(function(){
+                  window.open(this.href);
+                  return false;
+              });
+              resultsText = 'Postcode Search: showing ' + data.values.num_from + ' to ' + data.values.num_to + ' of ' + data.values.num_total + ' groups.';
+              $("#resultsShowingTop").html(resultsText);
+              $("#resultsShowing").html(resultsText);
+              if (pageNum >= 1) {
+                  $('#pagePrevTop').css('visibility', 'visible')
+                  $('#pagePrev').css('visibility', 'visible')
+              }
+              else {
+                  $('#pagePrevTop').css('visibility', 'hidden')
+                  $('#pagePrev').css('visibility', 'hidden')
+              }
+              if (pageNum < data.values.page_total) {
+                  $('#pageNextTop').css('visibility', 'visible')
+                  $('#pageNext').css('visibility', 'visible')
+              }
+              else {
+                  $('#pageNextTop').css('visibility', 'hidden')
+                  $('#pageNext').css('visibility', 'hidden')
+              }
+              $('#resultsControlsTop').show();
+              $('#resultsControls').show();
+            }
+            else {
+              $("#results").html('Sorry, no postcode matches found.');
+            }
+            $("#results").show();
+            $('#postal_code').removeAttr('disabled');
+          },
+          ajaxURL: 'civicrm/ajaxsearch/rest'
+        }
+      );
+	  
+	  
+	  
+	  
+	},
+		
+	
     displayKeywordSearchResults: function(wipe) {
       if (wipe) {
         $(this).attr('disabled', 1);
