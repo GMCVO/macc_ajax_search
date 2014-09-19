@@ -630,7 +630,7 @@ if(jQuery) (function($){
     },
 
 	displayCCGSearchResults: function(wipe) {
-	  alert("Here1");
+
       if (wipe) {
         $(this).attr('disabled', 1);
         $("#results").html('');
@@ -638,7 +638,14 @@ if(jQuery) (function($){
         $('#resultsControls').hide();
       }
 	  // Get selected results as some kind of seperated string
-	  var ccgSelection = $(this).val().join('#');
+	  var ccgSelectedValues = [];
+	  
+	  $('#options_ccg input:checkbox:checked').each(function() {
+		ccgSelectedValues.push(this.name);
+	   });
+	   
+	  var ccgSelection = ccgSelectedValues.join('#');
+	  
 	   CRM.api(
         "contact",
         "ajaxsearch",

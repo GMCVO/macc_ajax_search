@@ -65,9 +65,16 @@
     {/if}
 	
 	<div id="ccgSearchForm">
-		 <label>Search for a CCG funded project</label><br />		
-         {$form.ccgOptions.html}  
-		 <input type="button" name="Search" id="ccgSearchButton" value="Search">
+		<label>CCG Search</label><br />
+		<a href="javascript:;" class="multiSelect" id="multiSelect_ccg"><span>CCG Search</span></a>
+		<div id="options_ccg" class="multiSelectOptions" style="position: absolute; z-index: 99999; visibility: hidden;">
+			{foreach from=$form.option_ccg_id item="option_val"} 
+				<div class="{cycle values="odd-row,even-row"}">
+                    {$option_val.html}
+                </div>
+            {/foreach}
+        </div>
+		<input type="button" name="Search" id="ccgSearchButton" value="Search">
 	</div>	   
 
 	
@@ -139,6 +146,8 @@ $(document).ready(function() {
           $('#multiSelect1').multiSelect({noneSelected: 'Select target audience'});
           $('#multiSelect2').multiSelect({noneSelected: 'Select area of work'});
           $('#multiSelect3').multiSelect({noneSelected: 'Select locality'});
+		  $('#multiSelect_ccg').multiSelect({noneSelected: 'CCG Search'});
+		  
           $(this).multiSelectOptionsFilter();
           pageNum = 0;
           {/literal}
