@@ -63,7 +63,8 @@
         <input type="button" name="Search" id="keywordSearchButton" value="Search">
       </div>
     {/if}
-	
+
+<!--	
 	<div id="ccgSearchForm">
 		<label>CCG Search</label><br />
 		<a href="javascript:;" class="multiSelect" id="multiSelect_ccg"><span>CCG Search</span></a>
@@ -75,8 +76,9 @@
             {/foreach}
         </div>
 		<input type="button" name="Search" id="ccgSearchButton" value="Search">
-	</div>	   
-
+	</div>	
+-->
+   
 	
     <div id="searchResults" class="form-item">
       <div id="resultsControlsTop" style="display:none;">

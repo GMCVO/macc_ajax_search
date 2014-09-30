@@ -34,8 +34,12 @@ function civicrm_api3_contact_ajaxpresearch( $params ) {
     }
     $searchQuery = "SELECT COUNT(*) $from $aclFrom $where";
     $returnValues['query']       = $searchQuery; // For debugging
-    $count = CRM_Core_DAO::singleValueQuery( $searchQuery );
+    
+	CRM_Core_Error::debug_log_message( "searchquery is: ".print_r($searchQuery, TRUE) );
+	$count = CRM_Core_DAO::singleValueQuery( $searchQuery );
 
+	
+	
     $populatedValues = array();
     $optionsToHide = array();
 

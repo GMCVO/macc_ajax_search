@@ -49,6 +49,11 @@ function civicrm_api3_contact_ajaxsearch( &$params ) {
     if ($addressFrom) {
       $select .= ', a.postal_code';
     }
+	
+	//C Dean add the where from ccg field here
+	
+	$select .= ', civicrm_value_mcc_where_do_they_work__14.where_do_they_work_ccg_project__1170';
+	
 
     $searchQuery = "
 $select
@@ -62,6 +67,7 @@ LIMIT $limitFrom, $limitNum";
 CRM_Core_Error::debug_log_message( "searchquery: ".print_r($searchQuery, TRUE) );
 
     $dao = CRM_Core_DAO::executeQuery( $searchQuery );
+		
     $results = array();
     while ( $dao->fetch() ) {
         $result = array(
@@ -81,6 +87,15 @@ CRM_Core_Error::debug_log_message( "searchquery: ".print_r($searchQuery, TRUE) )
         if ($addressFrom) {
           $result['postal_code'] = $dao->postal_code;
         }
+		
+		
+		// C Dean 29/9/2014 append ccg where they work areas to where they work
+		$whereTheyWorkCCG = $dao->where_do_they_work_ccg_project__1170;
+		$delimiter = CRM_Core_DAO::VALUE_SEPARATOR;
+		$whereTheyWorkCCG = str_replace($delimiter," ",$whereTheyWorkCCG);
+		$result[option3] .= $whereTheyWorkCCG;
+		
+		
         $results[] = $result;
     }
 

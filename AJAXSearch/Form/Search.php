@@ -91,7 +91,7 @@ class AJAXSearch_Form_Search extends CRM_Core_Form {
 			
                 $val = "option{$i}_id[$value]";
 				
-				if (strpos($label,"ccg") > 0 ) {
+				if (strpos($label,"CCG") > 0 ) {
 					continue;
 				}
 				
@@ -108,7 +108,7 @@ class AJAXSearch_Form_Search extends CRM_Core_Form {
 		
 		//Add the ccg areas dropdown options here
 		// field id of custom field to use (from civicrm_custom_field)
-		$field_id = 78;
+		$field_id = 1170;
 		$customOptionCCG = CRM_Core_BAO_CustomOption::valuesByID( $field_id );
 		foreach ($customOptionCCG as $value => $label) {
 				$val = "option_ccg_id[$value]";
@@ -420,7 +420,7 @@ WHERE f.id = %1';
 				$startParen = strpos($option,"[");
 				$endParen = strpos($option,"]");
 		        $value = substr($option, $startParen+1,$endParen - $startParen -1);				
-           		$whereSubClauses[] = "(where_do_they_work__78 LIKE CONCAT('%', CHAR(1), '$value', CHAR(1), '%'))";
+           		$whereSubClauses[] = "(where_do_they_work_ccg_project__1170 LIKE CONCAT('%', CHAR(1), '$value', CHAR(1), '%'))";
 			 }
 			$whereClauses[] = '(' . implode(' OR ', $whereSubClauses) . ')'; 
 			 
