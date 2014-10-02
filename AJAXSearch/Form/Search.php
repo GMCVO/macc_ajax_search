@@ -424,7 +424,12 @@ WHERE f.id = %1';
 			 }
 			$whereClauses[] = '(' . implode(' OR ', $whereSubClauses) . ')'; 
 			 
+		} else {
+			$whereClauses[] = '( c.id not in (select entity_id from civicrm_value_mcc_where_do_they_work__14 where is_ccg_project_1171 = 1))'; 
+		
 		}
+
+
 		
 
         // OR search on keywords.

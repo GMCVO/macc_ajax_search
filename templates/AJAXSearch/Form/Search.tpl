@@ -64,7 +64,7 @@
       </div>
     {/if}
 
-<!--	
+	
 	<div id="ccgSearchForm">
 		<label>CCG Search</label><br />
 		<a href="javascript:;" class="multiSelect" id="multiSelect_ccg"><span>CCG Search</span></a>
@@ -77,7 +77,7 @@
         </div>
 		<input type="button" name="Search" id="ccgSearchButton" value="Search">
 	</div>	
--->
+
    
 	
     <div id="searchResults" class="form-item">

@@ -71,7 +71,8 @@ $where AND $fieldName IS NOT NULL";
                 }
             }
         }
-
+		
+		
         // Iterate through all option values for the field we're updating,
         // storing the unpopulated ones in $optionsToHide.
         $optionGroupID = $fieldInfo[$updateFieldID]['option_group_id'];
