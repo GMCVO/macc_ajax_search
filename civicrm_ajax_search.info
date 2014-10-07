@@ -1,5 +1,5 @@
 name = CiviCRM AJAX Search
-description = Alternative to CiviCRM profile search, using AJAX to disable options that would return no results.
+description = Alternative to CiviCRM profile search, using AJAX to disable options that would return no results. Also integrates CCG searching
 version = 4.3
 package = CiviCRM
 core = 7.x
