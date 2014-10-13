@@ -411,6 +411,8 @@ WHERE f.id = %1';
         }
 		
 		// OR search on ccg area
+		
+		
 				
 		if ($params['ccg_search']) {
 		
@@ -423,7 +425,9 @@ WHERE f.id = %1';
            		$whereSubClauses[] = "(where_do_they_work_ccg_project__1170 LIKE CONCAT('%', CHAR(1), '$value', CHAR(1), '%'))";
 			 }
 			$whereClauses[] = '(' . implode(' OR ', $whereSubClauses) . ')'; 
-			 
+		} else if (array_key_exists("ccg_search",$params)) {
+			$whereClauses[] = '( c.id in (select entity_id from civicrm_value_mcc_where_do_they_work__14 where is_ccg_project_1171 = 1))'; 				
+			
 		} else {
 			$whereClauses[] = '( c.id not in (select entity_id from civicrm_value_mcc_where_do_they_work__14 where is_ccg_project_1171 = 1))'; 
 		
@@ -524,6 +528,12 @@ WHERE f.id = %1';
                 $addressFrom .= " AND ({$tableName}.{$fieldName} = 0 OR {$tableName}.{$fieldName} IS NULL)";
             }
         }
+		
+	//	if ($params['ccg_search']) {
+	//		 $where .=  ' ( AND civicrm_value_mcc_where_do_they_work__14.is_ccg_project_1171 = 1)';
+	//	}
+		
+		
 
         return array (
             'configured' => TRUE,

@@ -669,7 +669,7 @@ if(jQuery) (function($){
                   window.open(this.href);
                   return false;
               });
-              resultsText = 'Postcode Search: showing ' + data.values.num_from + ' to ' + data.values.num_to + ' of ' + data.values.num_total + ' groups.';
+              resultsText = 'CCG Search: showing ' + data.values.num_from + ' to ' + data.values.num_to + ' of ' + data.values.num_total + ' groups.';
               $("#resultsShowingTop").html(resultsText);
               $("#resultsShowing").html(resultsText);
               if (pageNum >= 1) {
@@ -692,10 +692,10 @@ if(jQuery) (function($){
               $('#resultsControls').show();
             }
             else {
-              $("#results").html('Sorry, no postcode matches found.');
+              $("#results").html('Sorry, no CCG matches found.');
             }
             $("#results").show();
-            $('#postal_code').removeAttr('disabled');
+            $('#ccg_code').removeAttr('disabled');
           },
           ajaxURL: 'civicrm/ajaxsearch/rest'
         }
